@@ -17,6 +17,7 @@ var messageChan = make(chan string)
 var conns []*websocket.Conn
 
 func main() {
+	getConfig()
 
 	ws := websocket.New(websocket.DefaultGorillaUpgrader, websocket.Events{
 		websocket.OnNativeMessage: func(nsConn *websocket.NSConn, msg websocket.Message) error {
@@ -139,4 +140,8 @@ func calibrate(ctx iris.Context) {
 	service.NewCalibrate(unixSocket, klipperPath, messageChan, cTime)
 	ctx.Redirect("/report/"+strconv.FormatInt(cTime, 10), iris.StatusFound)
 
+}
+
+func getConfig() {
+	unixSocket, klipperPath = model.GetConfig()
 }

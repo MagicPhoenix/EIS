@@ -72,6 +72,15 @@ func UpdatePath(path string) {
 	db.Save(&setting)
 }
 
+func GetConfig() (string, string) {
+	var setting Setting
+	db.First(&setting)
+	if setting.ID > 0 {
+		return setting.Socket, setting.Path
+	}
+	return "", ""
+}
+
 func NewRecord(nRecord Record) {
 	db.Save(&nRecord)
 }
