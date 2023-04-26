@@ -43,7 +43,7 @@ Path is your klipper path, usually it's `/home/pi/klipper`, for CB1 it's `/home/
 
 That's all, now you can click ` +New Test` , when it shows 100% Command completed, just refresh the webpage.
 
-** Must home and qgl before best 
+** Must home and qgl before test 
 
 
 
