@@ -66,9 +66,11 @@ func main() {
 func home(ctx iris.Context) {
 
 	records := model.GetRecords()
+	if len(records) > 0 {
+		ctx.ViewData("records", records)
+		ctx.ViewData("cTime", records[len(records)-1].Time)
 
-	ctx.ViewData("records", records)
-	ctx.ViewData("cTime", records[len(records)-1].Time)
+	}
 
 	if err := ctx.View("index.html"); err != nil {
 		ctx.HTML("<h3>%s</h3>", err.Error())
@@ -91,6 +93,7 @@ func report(ctx iris.Context) {
 			break
 		}
 	}
+
 	ctx.ViewData("records", records)
 	ctx.ViewData("cTime", cTime)
 
