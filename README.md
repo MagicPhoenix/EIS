@@ -19,6 +19,7 @@ cd ~
 git clone https://github.com/MagicPhoenix/EIS
 cd EIS
 chmod +x ./eis
+chmod +x install.sh
 sudo ./install.sh  
 nohup ./eis &
 ```
