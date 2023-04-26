@@ -48,7 +48,25 @@ That's all, now you can click ` +New Test` , when it shows 100% Command complete
 
 
 
+### Compile
 
+If the stock binary file does not work, you can try compiling it
+
+```shell
+cd ~
+git clone https://github.com/MagicPhoenix/EIS
+cd EIS
+wget -qO- https://raw.githubusercontent.com/voidint/g/master/install.sh | bash
+source /home/pi/.g/env
+g install 1.18
+go mod tidy 
+rm eis
+go build -o eis main.go 
+chmod +x eis
+
+```
+
+Then follow `Install` above 
 
 ## PR
 
