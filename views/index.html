@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Easy Input Shaper</title>
+  <style>
+    .progress-container {
+      position: absolute;
+      top: 12.5%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50%;
+    }
+    progress {
+      width: 100%;
+    }
+    .progress-label {
+      position: absolute;
+      font-size: 12px;
+      color: #1E9FFF;
+      top: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .inline-edit {
+      display: flex;
+      align-items: center;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    input[type="text"] {
+      margin-right: 10px;
+    }
+    .shaper-result {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-grow: 1;
+    }
+    .shaper-result img {
+      margin-right: 10px;
+      max-width: 40%;
+      height: auto;
+    }
+  </style>
+  <script>
+
+      window.onload = function () {
+      // Replace "your-websocket-url" with your actual WebSocket URL
+        const host = window.location.host;
+        const wsAddress = "ws://" + host + "/ws";
+
+        const socket = new WebSocket(wsAddress);
+
+        socket.addEventListener("message", (event) => {
+          const data = event.data;
+          const [progress, text] = data.split("%");
+          updateProgress(parseInt(progress, 10), text);
+        });
+
+        function updateProgress(progress, text) {
+          const progressBar = document.querySelector("progress");
+          const progressLabel = document.querySelector(".progress-label");
+
+          progressBar.value = progress;
+          progressLabel.textContent = `${progress}% ${text}`;
+        }
+    }
+
+  </script>
+
+  <link rel="stylesheet" href="/static/layui.css">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    .layui-side {
+      height: 100%;
+      position: fixed;
+    }
+    .main-body {
+      background-color: #f2f2f2;
+      margin-left: 200px;
+      height: 100%;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+<div class="layui-side layui-bg-black">
+  <div class="layui-side-scroll">
+    <!-- 左侧导航区域（可配合 layui 已有的垂直导航） -->
+    <ul class="layui-nav layui-nav-tree" lay-filter="test">
+      <li class="layui-nav-item layui-nav-itemed">
+        <a class="" href="javascript:void(0);"  onclick="newTest()">+ New Test</a>
+        <dl class="layui-nav-child">
+          {{if .new}}
+            <dd><a href="/report/{{.cTime}}">{{.cTimeStr}}</a></dd>
+          {{end}}
+          {{range .records}}
+            <dd><a href="/report/{{.Time}}">{{.Name}}</a></dd>
+          {{end}}
+        </dl>
+      </li>
+      <li class="layui-nav-item"><a href="javascript:void(0);" onclick="socketConfig()">Socket Config</a></li>
+      <li class="layui-nav-item"><a href="javascript:void(0);" onclick="pathConfig()">Path Config</a></li>
+      <li class="layui-nav-item"><a href="https://github.com/MagicPhoenix/EIS">Github</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="main-body">
+  <div class="progress-container">
+    <progress value="100" max="100"></progress>
+    <span class="progress-label">100%</span>
+  </div>
+  <div class="shaper-result">
+    <img src="/static/result/{{.cTime}}x.png" alt="X">
+    <img src="/static/result/{{.cTime}}y.png" alt="y">
+  </div>
+  <div class="inline-edit">
+    <input type="text" name="name"  autocomplete="off" class="layui-input">
+    <button class="layui-btn layui-btn-primary layui-border-black" onclick="submitRename()">Rename</button>
+    <button class="layui-btn layui-btn-primary layui-border-black" onclick="del()">Del</button>
+  </div>
+</div>
+<script>
+  async function socketConfig() {
+    const userInput = prompt("Input Socket Address：");
+
+    if (!userInput || userInput.trim() === "") return alert("Invalid");
+    const formData = new FormData();
+    formData.append("input", userInput);
+
+    try {
+      const response = await fetch("/config/socket", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) throw new Error("Error");
+      alert("Config Success。");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error。");
+    }
+  }
+  async function pathConfig() {
+    const userInput = prompt("Input Klipper Path：");
+
+    if (!userInput || userInput.trim() === "") return alert("Invalid");
+    const formData = new FormData();
+    formData.append("input", userInput);
+
+    try {
+      const response = await fetch("/config/path", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) throw new Error("Error");
+      alert("Config Success。");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error。");
+    }
+  }
+  function submitRename() {
+    const inputValue = document.querySelector('input[name="name"]').value;
+    const formData = new FormData();
+    formData.append('name', inputValue);
+    formData.append('ctime', {{.cTime}});
+
+    fetch('/report/rename', {
+      method: 'POST',
+      body: formData,
+    })
+            .then((response) => {
+              if (response.ok) {
+                alert('Rename successful');
+              } else {
+                throw new Error('Failed to rename');
+              }
+            })
+            .catch((error) => {
+              console.error('Error:', error);
+              alert('Error: Unable to rename');
+            });
+  }
+
+  function del() {
+    const confirmed = confirm('Are you sure you want to del it?');
+
+    const formData = new FormData();
+    formData.append('ctime', {{.cTime}})
+    if (confirmed){
+      fetch('/report/del', {
+        method: 'POST',
+        body: formData,
+        redirect: 'manual',
+      })
+    .then((response) => {
+        if (response.status === 302) {
+          window.location.assign(response.headers.get('Location'))
+        } else {
+          console.error('Error: Expected a 302 redirect, but received a different status');
+        }
+      })
+              .catch((error) => {
+                console.error('Error:', error);
+              });
+    }
+
+
+  }
+  function newTest() {
+    const confirmed = confirm('Are you sure you want to create a new test?');
+
+    if (confirmed) {
+      fetch('/newCalibrate', {
+        method: 'POST',
+      })
+              .then((response) => {
+                if (response.status === 302) {
+                  window.location.assign(response.headers.get('Location'))
+                } else {
+                  console.error('Error: Expected a 302 redirect, but received a different status');
+                }
+              })
+              .catch((error) => {
+                console.error('Error:', error);
+              });
+    }
+
+  }
+
+
+
+</script>
+</body>
+</html>
