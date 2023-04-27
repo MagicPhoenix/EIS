@@ -1,4 +1,4 @@
-## Easy Input Shper UI
+## Easy Input Shaper UI
 
 It provide a web-ui for running `SHAPER_CALIBRATE` and generate charts.
 
